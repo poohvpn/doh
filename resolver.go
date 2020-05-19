@@ -91,8 +91,13 @@ func (r *Resolver) Query(ctx context.Context, domain string, t dns.Type) ([]stri
 				errsString = append(errsString, res.error.Error())
 				continue
 			}
-			if res.Status != 0 {
-				continue
+			if res.Status != dns.RcodeSuccess {
+				errsString = append(errsString, dns.RcodeToString[res.Status])
+				return nil, &dohError{
+					InnerError: errors.New(dns.RcodeToString[res.Status]),
+					Doamin:     domain,
+					Type:       t,
+				}
 			}
 			datas := make([]string, 0, len(res.Answer))
 			for _, ans := range res.Answer {
